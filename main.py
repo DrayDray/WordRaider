@@ -1,5 +1,7 @@
 # This is a sample Python script.
 import random
+import time
+
 
 MAX_GUESSES = 5
 # Press ⌃R to execute it or replace it with your code.
@@ -41,15 +43,60 @@ def get_valid_guess():
     return the_guess.lower()
 
 
-def start_guessing(word):
+
+def check_guess(the_guess, word, progress):
+    print("Checking your guess...")
+    time.sleep(3)  # Sleep for 3 seconds
     misplaced_letters = []
-    incorrect_letters = []
+    incorrect_letters = set()
+
+
+    # Iterate over each letter in the guess
+    for i in range(0, len(the_guess)):
+        char_guess = the_guess[i]
+        #Iterate over the word's characters
+        for j in range(0, len(word)):
+            char = word[j]
+            #exact match
+            if i == j and char_guess == char:
+                progress[j] = char
+                break
+            #misplaced match
+            elif i != j and char_guess == char:
+                misplaced_letters.append(char_guess)
+                break
+            #no match
+            else:
+                incorrect_letters.add(char_guess)
+
+    #remove misplaced letters from incorrect_letters list
+    for i in range(0, len(misplaced_letters)):
+        incorrect_letters.remove(misplaced_letters[i])
+
+    return misplaced_letters, incorrect_letters, progress
+
+def start_guessing(word):
+    progress = [None] * 5
     guesses_left = MAX_GUESSES
-    turns_taken = 0
     print(f"You will be guessing a 5 letter word.\n"
           f"You have {guesses_left} guesses left!")
 
-    the_guess = get_valid_guess()
+    print(f'FOR TESTING ONLY - word is {word}')
+
+    while progress != word and guesses_left > 0:
+        the_guess = get_valid_guess()
+        misplaced_letters, incorrect_letters, progress = check_guess(the_guess, word, progress)
+        print(f"Misplaced letters: {misplaced_letters}")
+        print(f"Incorrect letters: {incorrect_letters}")
+        print(f"Progress of Guess: {progress}")
+        guesses_left = guesses_left-1
+
+    if progress != word:
+        print("SORRY you ran out of guesses, GAME OVER.")
+    else:
+        print(f"AMAZING! You won and correctly guessed the word {word}")
+
+
 
 
 def play_game():
