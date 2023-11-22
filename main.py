@@ -35,45 +35,38 @@ def is_valid_guess(the_guess):
 
 def get_valid_guess():
     the_guess = input("What is your 5-letter-word guess?")
-    #if invalid guess keep requesting new one
+    # if invalid guess keep requesting new one
     while not is_valid_guess(the_guess):
         print("Your guess is invalid! Please try again with a 5-letter word guess.")
         the_guess = input("What is your alternative guess?")
-    print("Thanks! Great Guess!")
+    print("Thanks for guessing!")
     return the_guess.lower()
 
 
-
-def check_guess(the_guess, word, progress):
+def check_guess(the_guess, word, progress, word_hash_set, incorrect_letters):
     print("Checking your guess...")
-    time.sleep(3)  # Sleep for 3 seconds
     misplaced_letters = []
-    incorrect_letters = set()
-
 
     # Iterate over each letter in the guess
     for i in range(0, len(the_guess)):
         char_guess = the_guess[i]
-        #Iterate over the word's characters
-        for j in range(0, len(word)):
-            char = word[j]
-            #exact match
-            if i == j and char_guess == char:
-                progress[j] = char
-                break
-            #misplaced match
-            elif i != j and char_guess == char:
-                misplaced_letters.append(char_guess)
-                break
-            #no match
-            else:
-                incorrect_letters.add(char_guess)
+        char_in_word = word[i]
 
-    #remove misplaced letters from incorrect_letters list
-    for i in range(0, len(misplaced_letters)):
-        incorrect_letters.remove(misplaced_letters[i])
+        # check for match
+        if word_hash_set.__contains__(char_guess):
+            # check for exact match
+            if char_guess == char_in_word:
+                # record exact match
+                progress[i] = char_guess
+            else:
+                # match in wrong place
+                misplaced_letters.append(char_guess)
+        else:
+            # no match
+            incorrect_letters.add(char_guess)
 
     return misplaced_letters, incorrect_letters, progress
+
 
 def start_guessing(word):
     progress = [None] * 5
@@ -81,27 +74,33 @@ def start_guessing(word):
     print(f"You will be guessing a 5 letter word.\n"
           f"You have {guesses_left} guesses left!")
 
-    print(f'FOR TESTING ONLY - word is {word}')
+    # we don't care about case for this game
+    word = word.lower().strip()
+    print(f"FOR TESTING ONLY - THE WORD IS {word}")
+    word_hash_set = set(word)
+    incorrect_letters = set()
+    the_guess = ''
 
-    while progress != word and guesses_left > 0:
+    while the_guess != word and guesses_left > 0:
         the_guess = get_valid_guess()
-        misplaced_letters, incorrect_letters, progress = check_guess(the_guess, word, progress)
-        print(f"Misplaced letters: {misplaced_letters}")
-        print(f"Incorrect letters: {incorrect_letters}")
-        print(f"Progress of Guess: {progress}")
-        guesses_left = guesses_left-1
+        misplaced_letters, incorrect_letters, progress = check_guess(the_guess, word, progress, word_hash_set,
+                                                                     incorrect_letters)
+        if the_guess != word:
+            print(f"\nMisplaced letters: {misplaced_letters}")
+            print(f"Incorrect letters: {incorrect_letters}")
+            print(f"EXACT MATCHES: {progress}")
+            guesses_left = guesses_left - 1
 
-    if progress != word:
-        print("SORRY you ran out of guesses, GAME OVER.")
+    if the_guess == word:
+        print(f"\nAMAZING! You won and correctly guessed the word {word} ! "
+              f"\n START THE FIREWORKS ! ! !")
     else:
-        print(f"AMAZING! You won and correctly guessed the word {word}")
-
-
+        print("\n SORRY - YOU ARE OUT OF GUESSES. BETTER LUCK NEXT TIME. "
+          f"\n THE WORD WAS \"{word.upper()}\".")
 
 
 def play_game():
-    print("Welcome to Word Raider. Get Ready to begin!\n"
-          "3...2...1... Here we go!")
+    print("Welcome to Word Raider. Get Ready to begin!\n")
 
     lines = load_in_word_bank()
     chosen_word = choose_word(lines)
